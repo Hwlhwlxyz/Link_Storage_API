@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Route, WebSocketRoute
 
-from .controller import base
+from .configuration.database import SessionLocal, Base, engine
+from .controller import base, user, document
 
 FASTAPI_CFG = {
     'debug': True,
@@ -11,20 +12,25 @@ FASTAPI_CFG = {
 
 APP = FastAPI(**FASTAPI_CFG)
 
+
 # register startup event
 @APP.on_event('startup')
 async def start_app():
+    # create database
+    Base.metadata.create_all(engine)
 
-    APP.include_router(base.ROUTER)
+    APP.include_router(base.ROUTER, tags=["base"])
+    APP.include_router(user.ROUTER, prefix="/api/user", tags=["user"], )
+    APP.include_router(document.ROUTER, prefix="/api/document", tags=["document"], )
 
     # dump routers
     for route in APP.routes:
         if isinstance(route, Route):
             print('http router %s: %s %s' %
-                        (route.name, route.path, route.methods))
+                  (route.name, route.path, route.methods))
         elif isinstance(route, WebSocketRoute):
             print('websocket router %s: %s ' %
-                        (route.name, route.path))
+                  (route.name, route.path))
     # middlewares
     APP.add_middleware(
         CORSMiddleware,
