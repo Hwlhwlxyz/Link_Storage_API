@@ -30,13 +30,7 @@ class User(Base):
     @staticmethod
     def get_user(username: str):
         if username == 'test':
-            return User(username=username, hashed_password='$2b$12$.dLvFcuDQ3buX.ak5ks2lOVYfoCByRzeeomh1YfVjc80xK96z8c7m')
-
-    def check_password(self, input_password):
-        if fake_hash_password(input_password) == self.hashed_password:
-            return True
-        else:
-            return False
+            return User(username=username, hashed_password='$2b$12$.dLvFcuDQ3buX.ak5ks2lOVYfoCByRzeeomh1YfVjc80xK96z8c7m', id=1)
 
     @staticmethod
     def authenticate_user(username: str, password: str):
@@ -73,9 +67,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def fake_hash_password(password: str):
-    return "fakehashed" + password
-
 
 def verify_password(plain_password, hashed_password):
     verified = False
@@ -89,7 +80,6 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def fake_decode_token(token):
-    return User.get_user(token)
+
 
 

@@ -16,5 +16,5 @@ class Document(Base):
     # type=link
     url = Column(String)
     description = Column(String)
-
+    title = Column(String)
 

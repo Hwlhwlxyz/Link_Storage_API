@@ -32,7 +32,7 @@ class InputUser(BaseModel):
     email: str
     password: str
 
-@ROUTER.post("/users/")
+@ROUTER.post("/")
 def create_new_user(input_user: InputUser, db: Session = Depends(get_db)):
     # db_user = User.get_user(db, email=input_user.username)
 
@@ -42,7 +42,7 @@ def create_new_user(input_user: InputUser, db: Session = Depends(get_db)):
     print(new_user)
     return new_user
 
-@ROUTER.get("/users/")
+@ROUTER.get("/all")
 def get_all_users(db: Session = Depends(get_db)):
     users = app.service.user.get_all_users(db)
     print(users)

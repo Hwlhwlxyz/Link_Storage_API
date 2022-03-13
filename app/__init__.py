@@ -12,6 +12,10 @@ FASTAPI_CFG = {
 
 APP = FastAPI(**FASTAPI_CFG)
 
+# cors
+
+
+
 
 # register startup event
 @APP.on_event('startup')
