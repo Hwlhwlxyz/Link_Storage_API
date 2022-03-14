@@ -32,6 +32,7 @@ class User(Base):
         if username == 'test':
             return User(username=username, hashed_password='$2b$12$.dLvFcuDQ3buX.ak5ks2lOVYfoCByRzeeomh1YfVjc80xK96z8c7m', id=1)
 
+
     @staticmethod
     def authenticate_user(username: str, password: str):
         print(get_password_hash(password))
@@ -39,18 +40,18 @@ class User(Base):
         print(user.hashed_password)
         if not user:
             return False
-        if not verify_password(password, user.hashed_password):
+        if not User.verify_password(password, user.hashed_password):
             return False
         return user
 
     @staticmethod
-    def login_check(email: str, hashed_password: str):
-        if email == 'test':
-            return True
-        elif email == 'test1':
-            if hashed_password == 'password':
-                return True
-        return False
+    def verify_password(plain_password, hashed_password):
+        verified = False
+        try:
+            verified = pwd_context.verify(plain_password, hashed_password)
+        except UnknownHashError:
+            verified = False
+        return verified
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -68,13 +69,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 
-def verify_password(plain_password, hashed_password):
-    verified = False
-    try:
-        verified = pwd_context.verify(plain_password, hashed_password)
-    except UnknownHashError:
-        verified = False
-    return verified
 
 
 def get_password_hash(password):

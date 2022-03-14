@@ -13,17 +13,7 @@ import app.service.user
 
 ROUTER = APIRouter()
 
-@ROUTER.get('/profile')
-def user():
-    return {"user": "Hello World"}
-
-
-@ROUTER.get("/items/")
-async def read_items(token: str = Depends(oauth2_scheme)):
-    return {"token": token}
-
-
-@ROUTER.get("/users/me")
+@ROUTER.get("/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 

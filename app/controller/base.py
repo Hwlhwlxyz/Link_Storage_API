@@ -3,12 +3,14 @@ from urllib.parse import parse_qsl
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 from starlette.requests import Request
-from fastapi.security import OAuth2PasswordRequestForm
-from pydantic.class_validators import Optional
+
 from starlette import status
 from starlette.responses import Response, JSONResponse
 
+import app.service.user
+from app.configuration.database import get_db
 from app.configuration.variables import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.model.user import User, create_access_token
 from pydantic import BaseModel
@@ -60,7 +62,7 @@ class TokenRequestObject(BaseModel):
 
 # https://github.com/tiangolo/fastapi/issues/3327#issuecomment-876489648 # support different content-type
 @ROUTER.post("/token", response_class=Response)
-async def login_for_access_token_form(request: Request):
+async def login_for_access_token_form(request: Request, db: Session = Depends(get_db)):
     value_to_decode = await request.body()
     value = value_to_decode.decode()
     username = None
@@ -77,9 +79,9 @@ async def login_for_access_token_form(request: Request):
 
     print(username, password)
 
-
-    user_entity = User.get_user(username)
-    print(User.authenticate_user(username, password))
+    user_entity = app.service.user.login_user_check(db, username, password)
+    # user_entity = User.get_user(username)
+    # print(User.authenticate_user(username, password))
     if not user_entity:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
