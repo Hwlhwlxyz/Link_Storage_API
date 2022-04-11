@@ -3,7 +3,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Route, WebSocketRoute
 
 from .configuration.database import SessionLocal, Base, engine
-from .controller import base, user, document
+from .controller import base, user, document, tag
 
 FASTAPI_CFG = {
     'debug': True,
@@ -26,6 +26,7 @@ async def start_app():
     APP.include_router(base.ROUTER, tags=["base"])
     APP.include_router(user.ROUTER, prefix="/api/user", tags=["user"], )
     APP.include_router(document.ROUTER, prefix="/api/document", tags=["document"], )
+    APP.include_router(tag.ROUTER, prefix="/api/tag", tags=["tag"], )
 
     # dump routers
     for route in APP.routes:

@@ -10,7 +10,8 @@ ROUTER = APIRouter()
 
 @ROUTER.get('/all')
 def all_documents(userid, db: Session = Depends(get_db)):
-    response = app.service.document.get_all_documents(db, userid)
+    # response = app.service.document.get_all_documents(db, userid)
+    response = app.service.document.get_all_documents_with_tags(db, userid)
     print(response)
     return response
 
