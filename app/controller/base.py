@@ -10,6 +10,7 @@ from starlette import status
 from starlette.responses import Response, JSONResponse
 
 import app.service.user
+from app.configuration.auth import get_current_user
 from app.configuration.database import get_db
 from app.configuration.variables import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.model.user import User, create_access_token
@@ -90,6 +91,43 @@ async def login_for_access_token_form(request: Request, db: Session = Depends(ge
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user_entity.email}, expires_delta=access_token_expires
+        data={"sub": access_token_generator(user_entity.username, user_entity.id)}, expires_delta=access_token_expires
+    )
+    return JSONResponse({"access_token": access_token, "token_type": "bearer", "id": user_entity.id})
+
+def access_token_generator(username, userid):
+    return json.dumps({'name': username, 'id': userid})
+
+def refresh_token_generator(username, userid, info):
+    return json.dumps({'name': username, 'id': userid, 'info': info})
+
+@ROUTER.post("/refreshtoken", response_class=Response)
+async def refresh_for_access_token_form(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    print(current_user)
+    value_to_decode = await request.body()
+    value = value_to_decode.decode()
+    username = None
+    password = None
+    try:
+        json_value = json.loads(value)
+        username = json_value['username']
+        password = json_value['password']
+    except ValueError:
+        dict_value = dict(parse_qsl(value))
+        username = dict_value['username']
+        password = dict_value['password']
+
+    user_entity = app.service.user.login_user_check(db, username, password)
+    # user_entity = User.get_user(username)
+    # print(User.authenticate_user(username, password))
+    if not user_entity:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": refresh_token_generator(user_entity.username, user_entity.id, "refreshtoken")}, expires_delta=access_token_expires
     )
     return JSONResponse({"access_token": access_token, "token_type": "bearer", "id": user_entity.id})

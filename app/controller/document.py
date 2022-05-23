@@ -22,6 +22,12 @@ def search_documents(userid, keyword: str, db: Session = Depends(get_db)):
     print(response)
     return response
 
+@ROUTER.get('/tag/{tag}')
+def search_documents(userid, tag: str, db: Session = Depends(get_db)):
+    response = app.service.document.get_documents_with_tags_by_tag(db, userid, tag)
+    print(response)
+    return response
+
 
 class InputDocument(BaseModel):
     userid: str

@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 from passlib.exc import UnknownHashError
 from sqlalchemy.orm import relationship
 
-from ..configuration.database import Base
+from ..configuration.database import Base, get_db
 
 from ..configuration.variables import jwt_values
 
@@ -32,6 +32,10 @@ class User(Base):
         if username == 'test':
             return User(username=username, hashed_password='$2b$12$.dLvFcuDQ3buX.ak5ks2lOVYfoCByRzeeomh1YfVjc80xK96z8c7m', id=1)
 
+    @staticmethod
+    def get_one_user_by_id(userid):
+        session = get_db()
+        return session.query(User).get(userid)
 
     @staticmethod
     def authenticate_user(username: str, password: str):
