@@ -13,6 +13,9 @@ def create_user(session, username, email, password):
     session.commit()
     return new_user
 
+def get_by_username(session, username):
+    user = session.query(User).filter(username=username).one()
+    return user
 
 def get_all_users(session):
     users = session.query(User).all()
@@ -35,14 +38,14 @@ def login_user_check(session, username, input_password):
     return None
 
 
-def edit_user(session, query_id, username, email, password):
+def edit_user(session, query_id, email, password):
     hashed_password = get_password_hash(password)
     session.query(User). \
         filter(User.id == query_id). \
         update({
-            'username': username,
+            # 'username': username,
             'email': email,
-            'password': hashed_password
+            'hashed_password': hashed_password
         })
     session.commit()
-    return {id: query_id}
+    return {'id': query_id, 'email': email}

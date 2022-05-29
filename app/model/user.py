@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timedelta
 from typing import Optional
 
-
 from jose import jwt
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from passlib.context import CryptContext
@@ -17,7 +16,7 @@ from ..configuration.variables import jwt_values
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer,  unique=True, primary_key=True, index=True)
+    id = Column(Integer, unique=True, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
@@ -30,7 +29,8 @@ class User(Base):
     @staticmethod
     def get_user(username: str):
         if username == 'test':
-            return User(username=username, hashed_password='$2b$12$.dLvFcuDQ3buX.ak5ks2lOVYfoCByRzeeomh1YfVjc80xK96z8c7m', id=1)
+            return User(username=username,
+                        hashed_password='$2b$12$.dLvFcuDQ3buX.ak5ks2lOVYfoCByRzeeomh1YfVjc80xK96z8c7m', id=1)
 
     @staticmethod
     def get_one_user_by_id(userid):
@@ -72,12 +72,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-
-
-
 def get_password_hash(password):
-    return pwd_context.hash(password)
-
-
-
-
+    if password is not None and len(password)>1:
+        return pwd_context.hash(password)
+    else:
+        return None

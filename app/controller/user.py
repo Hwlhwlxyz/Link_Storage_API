@@ -1,3 +1,5 @@
+import re
+
 from fastapi import Depends, FastAPI, HTTPException, status, APIRouter
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -25,10 +27,9 @@ class InputUser(BaseModel):
 
 @ROUTER.post("/")
 def create_new_user(input_user: InputUser, db: Session = Depends(get_db)):
-    # db_user = User.get_user(db, email=input_user.username)
-
-    # if db_user:
-    #     raise HTTPException(status_code=400, detail="Email already registered")
+    db_user = app.service.user.get_by_username(db, input_user.username)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already used")
     new_user = app.service.user.create_user(db, input_user.username, input_user.email, input_user.password)
     print(new_user)
     return new_user
@@ -43,18 +44,30 @@ def get_all_users(db: Session = Depends(get_db)):
 
 class InputUserWithId(BaseModel):
     id: int
-    username: str
     email: str
     password: str
 
 
 @ROUTER.post("/edit")
-def create_new_user(input_user: InputUserWithId, db: Session = Depends(get_db)):
-    # db_user = User.get_user(db, email=input_user.username)
+def edit_user(input_user: InputUserWithId, db: Session = Depends(get_db)):
+    db_user = app.service.user.get_one_user(db, input_user.id)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="Username not exist")
 
-    # if db_user:
-    #     raise HTTPException(status_code=400, detail="Email already registered")
-    new_user = app.service.user.edit_user(db, input_user.id, input_user.username, input_user.email, input_user.password)
+    def check(email):
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        if re.fullmatch(regex, email):
+            return True
+        else:
+            return False
+
+    if not check(input_user.email):
+        input_user.email = db_user.email
+
+    if input_user.password is None or len(input_user.password)==0:
+        input_user.password = None
+
+    new_user = app.service.user.edit_user(db, input_user.id, input_user.email, input_user.password)
     print(new_user)
     return new_user
 
